@@ -22,7 +22,7 @@ const {
 // 找到相對應頁面，改後面的component
 const zhPage = {
   news: ["最新消息", News],
-  schedule: ["賽程時間表", Scheduler],
+  schedule: ["安排賽程時間", Scheduler],
   scheduleRead: ["賽程時間表", SchedulerRead],
   gameResult: ["比賽結果", Default],
   adminInfo: ["主辦介紹", Default],

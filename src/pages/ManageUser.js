@@ -38,6 +38,13 @@ export default function ManageUser() {
     {
       title: "使用者類別",
       dataIndex: "admin",
+      onFilter: (value, user) => value === user.admin,
+      filters: [
+        { text: "主辦單位", value: "administer" },
+        { text: "系隊", value: "team" },
+        { text: "記錄員", value: "recorder" },
+      ],
+
       render: (value) => admins[value],
     },
     {

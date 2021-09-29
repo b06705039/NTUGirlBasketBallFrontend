@@ -9,13 +9,12 @@ import {
   Select,
   Modal,
   message,
-  Upload,
 } from "antd";
-import { Team, Player, GenerateImageURL } from "../axios";
+import { Team, Player } from "../axios";
 import { usePages } from "../hooks/usePages";
 import Departments from "../department.json";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
-import ImgCrop from "antd-img-crop";
+
 const { Option } = Select;
 export default function CheckTeams() {
   const { userInfo } = usePages();
@@ -463,10 +462,6 @@ function PlayersTable({ teamID, editable }) {
   const [onDeletePlayer, setOnDeletePlayer] = useState(false);
   const [playerID, setPlayerID] = useState({});
   const [loading, setLoading] = useState(true);
-  const [loadingImage, setLoadingImage] = useState(false);
-  const [previewVisible, setPreviewVisible] = useState(false);
-  const [targetName, setTargetName] = useState("新增球員");
-  const [targetImageUrl, setTargetImageUrl] = useState("");
   const [form] = Form.useForm();
   useEffect(async () => {
     setLoading(true);
@@ -522,25 +517,6 @@ function PlayersTable({ teamID, editable }) {
     message.error(response.message);
   };
 
-  const onImagePreview = async () => {
-    const { photo, name } = form.getFieldsValue();
-    setTargetName(name || "新增球員");
-    setTargetImageUrl(photo);
-    setPreviewVisible(true);
-  };
-  const onUploadFile = async (options) => {
-    const { onSuccess, onError, file, onProgress } = options;
-    onProgress("上傳中");
-    const response = await GenerateImageURL(file);
-    if (response.code === 200) {
-      form.setFieldsValue({ photo: response.url });
-      setTargetImageUrl(response.url);
-      onSuccess("成功上傳");
-      return;
-    }
-    const error = new Error("上傳失敗");
-    onError({ event: error });
-  };
   const columns = [
     {
       title: "姓名",
@@ -563,23 +539,6 @@ function PlayersTable({ teamID, editable }) {
       dataIndex: "create_time",
       render: (value) => new Date(value).toLocaleString(),
     },
-    {
-      title: "學生證連結",
-      render: (value) =>
-        value.photo ? (
-          <a
-            onClick={() => {
-              setTargetImageUrl(value.photo);
-              setTargetName(value.name);
-              setPreviewVisible(true);
-            }}
-          >
-            檢視
-          </a>
-        ) : (
-          <h4>未上傳</h4>
-        ),
-    },
   ];
   if (editable)
     columns.push({
@@ -591,7 +550,6 @@ function PlayersTable({ teamID, editable }) {
             setOnEditPlayer(true);
             setPlayerID(value._id);
             form.setFieldsValue(value);
-            setTargetImageUrl(value.photo || null);
           }}
         >
           編輯
@@ -610,9 +568,7 @@ function PlayersTable({ teamID, editable }) {
       },
     },
   };
-  useEffect(() => {
-    setLoadingImage(true);
-  }, [targetImageUrl]);
+
   return (
     <React.Fragment>
       <Table columns={columns} dataSource={data} loading={loading} />
@@ -622,7 +578,6 @@ function PlayersTable({ teamID, editable }) {
           setOnEditPlayer(true);
           setPlayerID(null);
           form.resetFields();
-          setTargetImageUrl(null);
         }}
         hidden={!editable}
       >
@@ -749,36 +704,7 @@ function PlayersTable({ teamID, editable }) {
           >
             <InputNumber />
           </Form.Item>
-          <Form.Item
-            label="學生證連結"
-            name="photo"
-            labelAlign="left"
-            rules={[{ type: "url" }]}
-          >
-            <Input />
-          </Form.Item>
         </Form>
-
-        <ImgCrop rotate aspect={2} onModalOk={() => console.log("Uploaded")}>
-          <Upload
-            customRequest={onUploadFile}
-            listType="picture-card"
-            onPreview={onImagePreview}
-            fileList={
-              targetImageUrl
-                ? [
-                    {
-                      uid: "-1",
-                      status: "done",
-                      url: targetImageUrl,
-                    },
-                  ]
-                : []
-            }
-          >
-            上傳學生證
-          </Upload>
-        </ImgCrop>
       </Modal>
       <Modal
         visible={onDeletePlayer}
@@ -786,27 +712,6 @@ function PlayersTable({ teamID, editable }) {
         onOk={DeletePlayer}
         title={"確認刪除球員"}
       >{`確認刪除球員 ${form.getFieldValue("name")}`}</Modal>
-      <Modal
-        visible={previewVisible}
-        title={targetName}
-        footer={[
-          <Button
-            onClick={() => {
-              setPreviewVisible(false);
-            }}
-          >
-            OK
-          </Button>,
-        ]}
-      >
-        <img
-          alt="example"
-          hidden={!loadingImage}
-          style={{ width: "100%" }}
-          src={targetImageUrl}
-          onLoad={() => setLoadingImage(true)}
-        />
-      </Modal>
     </React.Fragment>
   );
 }

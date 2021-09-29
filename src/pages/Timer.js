@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Select, Form } from "antd";
+import { Select, Form, message } from "antd";
 import Scheduler, { View } from "devextreme-react/scheduler";
 import { LoadPanel } from "devextreme-react/load-panel";
 import { Team, Time } from "../axios";
@@ -14,7 +14,7 @@ const views = ["workWeek"];
 const TimeRangeObject = { 1: "12:30", 2: "18:30", 3: "19:30" };
 
 function Appointment() {
-  return <div style={{ textAlign: "center" }}>{"無法出賽"}</div>;
+  return <div style={{ textAlign: "center", fontSize: 17 }}>{"無法出賽"}</div>;
 }
 
 const TimeCell = ({ date }) => {
@@ -49,6 +49,10 @@ function App() {
     endDate: new Date(2021, 1, parseInt(number / 3) + 1, (number % 3) + 2),
   });
   const AddbusyTime = async (data) => {
+    if (timeNumbers.length >= 3 && admin === "team") {
+      message.error("僅能填寫3個無法出賽時段");
+      return;
+    }
     const newAppointment = data.cellData;
     const WeekDay = newAppointment.startDate.getDay();
     const Hour = newAppointment.startDate.getHours();

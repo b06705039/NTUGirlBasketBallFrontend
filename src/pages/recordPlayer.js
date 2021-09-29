@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import { Button, Table, Radio, Input } from "antd";
+import { Button, Table, Radio, Input, message } from "antd";
 import { RecordPlayerAPI, Player } from "../axios";
 import "antd/dist/antd.css";
 
@@ -78,10 +78,14 @@ const RecordPlayer = (props) => {
     );
     if (!updatePlayers || !updateNumberToColumn) {
       // get players from db
-      const playersList = await Player.GetAllPlayerByTeamID(teamId);
+      const response = await Player.GetAllPlayerByTeamID(teamId);
+      if (response.code !== 200) {
+        message.error(response.message);
+        return;
+      }
       updatePlayers = [];
       updateNumberToColumn = {};
-      playersList.map((player, index) => {
+      response.data.map((player, index) => {
         console.log(player);
         // for players
         let newBtnDict = {};
